@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { QRCodeCanvas } from 'qrcode.react'
 
 function App() {
   const [url, setUrl] = useState('')
@@ -9,6 +10,10 @@ function App() {
   // Stats Modal State
   const [showStatsModal, setShowStatsModal] = useState(false)
   const [selectedLinkStats, setSelectedLinkStats] = useState(null)
+
+  // QR Modal State
+  const [showQrModal, setShowQrModal] = useState(false)
+  const [selectedQrLink, setSelectedQrLink] = useState(null)
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 
@@ -21,7 +26,7 @@ function App() {
           id: item.id,
           original: item.original_url,
           short: `shrink.it/${item.short_key}`,
-          real_short_key: item.short_key, // Store real key for fetching stats
+          real_short_key: item.short_key,
           clicks: item.clicks_count,
           status: item.is_active ? 'Active' : 'Inactive'
         }))
@@ -41,8 +46,6 @@ function App() {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/urls/${shortKey}/stats`)
       if (response.ok) {
         const data = await response.json()
-        
-        // Process clicks for charts
         const browserCounts = {}
         const osCounts = {}
 
@@ -56,17 +59,29 @@ function App() {
         const browserData = Object.keys(browserCounts).map(key => ({ name: key, value: browserCounts[key] }))
         const osData = Object.keys(osCounts).map(key => ({ name: key, value: osCounts[key] }))
 
-        setSelectedLinkStats({
-          ...data,
-          browserData,
-          osData
-        })
+        setSelectedLinkStats({ ...data, browserData, osData })
         setShowStatsModal(true)
       }
     } catch (error) {
       console.error("Error fetching stats:", error)
       alert("Failed to load stats")
     }
+  }
+
+  const handleViewQr = (link) => {
+    setSelectedQrLink(link)
+    setShowQrModal(true)
+  }
+
+  const downloadQr = () => {
+    const canvas = document.getElementById('qr-code-canvas')
+    const pngUrl = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
+    const downloadLink = document.createElement('a')
+    downloadLink.href = pngUrl
+    downloadLink.download = `qrcode-${selectedQrLink.real_short_key}.png`
+    document.body.appendChild(downloadLink)
+    downloadLink.click()
+    document.body.removeChild(downloadLink)
   }
 
   const handleSubmit = async (e) => {
@@ -104,7 +119,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans relative">
-      {/* Header */}
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-indigo-600">ShrinkIt Pro</h1>
@@ -116,7 +130,6 @@ function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Shortener Section */}
         <section className="bg-white rounded-2xl shadow-xl p-8 mb-10">
           <h2 className="text-xl font-semibold mb-6">Create New Short Link</h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -148,7 +161,6 @@ function App() {
           </form>
         </section>
 
-        {/* Dashboard Stats Preview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">Total Links</p>
@@ -166,7 +178,6 @@ function App() {
           </div>
         </div>
 
-        {/* Links Table */}
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">Your Links</h2>
@@ -206,6 +217,13 @@ function App() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button 
+                        onClick={() => handleViewQr(link)}
+                        className="text-gray-400 hover:text-indigo-600 mr-3"
+                        title="View QR Code"
+                      >
+                        📱
+                      </button>
+                      <button 
                         onClick={() => handleViewStats(link.real_short_key)}
                         className="text-gray-400 hover:text-indigo-600 mr-3"
                         title="View Analytics"
@@ -231,27 +249,16 @@ function App() {
             >
               ✕
             </button>
-            
             <h2 className="text-2xl font-bold mb-2 text-gray-900">Analytics Report</h2>
             <p className="text-gray-500 mb-8">Stats for <span className="text-indigo-600 font-mono">shrink.it/{selectedLinkStats.short_key}</span></p>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Browser Chart */}
               <div className="bg-gray-50 p-6 rounded-xl">
                 <h3 className="text-lg font-semibold mb-4 text-center">Browsers</h3>
                 <div className="h-64">
                   {selectedLinkStats.browserData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie
-                          data={selectedLinkStats.browserData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label
-                        >
+                        <Pie data={selectedLinkStats.browserData} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="value" label>
                           {selectedLinkStats.browserData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
@@ -265,23 +272,13 @@ function App() {
                   )}
                 </div>
               </div>
-
-              {/* OS Chart */}
               <div className="bg-gray-50 p-6 rounded-xl">
                 <h3 className="text-lg font-semibold mb-4 text-center">Operating Systems</h3>
                 <div className="h-64">
                   {selectedLinkStats.osData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie
-                          data={selectedLinkStats.osData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#82ca9d"
-                          dataKey="value"
-                          label
-                        >
+                        <Pie data={selectedLinkStats.osData} cx="50%" cy="50%" outerRadius={80} fill="#82ca9d" dataKey="value" label>
                           {selectedLinkStats.osData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
@@ -296,7 +293,6 @@ function App() {
                 </div>
               </div>
             </div>
-            
             <div className="mt-8 text-right">
               <button 
                 onClick={() => setShowStatsModal(false)}
@@ -305,6 +301,39 @@ function App() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Modal */}
+      {showQrModal && selectedQrLink && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
+            <button 
+              onClick={() => setShowQrModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold mb-6 text-gray-900">QR Code</h2>
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-inner mb-6">
+              <QRCodeCanvas 
+                id="qr-code-canvas"
+                value={`${import.meta.env.VITE_API_URL}/${selectedQrLink.real_short_key}`} 
+                size={200}
+                level={"H"}
+                includeMargin={true}
+              />
+            </div>
+            <p className="text-sm text-gray-500 mb-6 text-center break-all">
+              {import.meta.env.VITE_API_URL}/{selectedQrLink.real_short_key}
+            </p>
+            <button 
+              onClick={downloadQr}
+              className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition"
+            >
+              Download PNG 📥
+            </button>
           </div>
         </div>
       )}
