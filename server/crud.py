@@ -22,7 +22,7 @@ def encode_base62(num):
     return ''.join(arr)
 
 def create_url(db: Session, url: schemas.URLCreate):
-    db_url = models.URL(original_url=url.original_url, custom_slug=url.custom_slug)
+    db_url = models.URL(original_url=str(url.original_url), custom_slug=url.custom_slug)
     db.add(db_url)
     db.commit()
     db.refresh(db_url)
