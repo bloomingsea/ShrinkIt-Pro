@@ -20,19 +20,13 @@ ShrinkIt Pro is a high-performance URL shortening service and analytics platform
    ```bash
    cd server
    ```
-2. Create and activate virtual environment:
+2. Install dependencies:
    ```bash
-   # Linux/Mac
-   python3 -m venv venv
-   source venv/bin/activate
+   npm install
    ```
-3. Install dependencies:
+3. Run the server:
    ```bash
-   pip install -r requirements.txt
-   ```
-4. Run the server:
-   ```bash
-   uvicorn main:app --reload
+   node index.js
    ```
 
 ### Frontend (Client)
