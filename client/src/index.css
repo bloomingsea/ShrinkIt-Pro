@@ -2,10 +2,13 @@
 
 @theme {
   --font-display: "Inter", sans-serif;
+  --color-primary: #306ee8;
+  --color-background-light: #f6f6f8;
+  --color-background-dark: #111621;
 }
 
 body {
-  @apply font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white overflow-x-hidden antialiased selection:bg-primary selection:text-white;
+  @apply font-display bg-[--color-background-light] dark:bg-[--color-background-dark] text-slate-900 dark:text-white overflow-x-hidden antialiased selection:bg-[--color-primary] selection:text-white;
 }
 
 .glass-panel {

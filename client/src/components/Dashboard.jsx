@@ -129,7 +129,7 @@ function Dashboard() {
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">Top Link</p>
             <p className="text-lg font-bold text-indigo-600 mt-1 truncate">
-              {links.reduce((prev, current) => (prev.clicks > current.clicks) ? prev : current).short}
+              {links.length > 0 ? links.reduce((prev, current) => (prev.clicks > current.clicks) ? prev : current).short : 'N/A'}
             </p>
           </div>
         </div>
