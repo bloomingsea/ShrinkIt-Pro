@@ -60,3 +60,6 @@ def create_click(db: Session, url_id: int, ip: str, country: str, city: str, bro
     db.commit()
     db.refresh(db_click)
     return db_click
+
+def get_urls(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.URL).offset(skip).limit(limit).all()

@@ -1,12 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 function App() {
   const [url, setUrl] = useState('')
   const [slug, setSlug] = useState('')
-  const [links, setLinks] = useState([
-    { id: 1, original: 'https://google.com', short: 'shrink.it/ggl', clicks: 120, status: 'Active' },
-    { id: 2, original: 'https://github.com', short: 'shrink.it/ghub', clicks: 450, status: 'Active' },
-  ])
+  const [links, setLinks] = useState([])
+
+  const fetchUrls = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/urls/`)
+      if (response.ok) {
+        const data = await response.json()
+        const formattedLinks = data.map(item => ({
+          id: item.id,
+          original: item.original_url,
+          short: `shrink.it/${item.short_key}`,
+          clicks: item.clicks_count,
+          status: item.is_active ? 'Active' : 'Inactive'
+        }))
+        // Sort by newest first
+        setLinks(formattedLinks.reverse())
+      }
+    } catch (error) {
+      console.error('Error fetching URLs:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchUrls()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

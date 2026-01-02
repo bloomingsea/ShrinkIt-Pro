@@ -40,6 +40,11 @@ def create_url(url: schemas.URLCreate, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Slug already taken")
     return crud.create_url(db=db, url=url)
 
+@app.get("/urls/", response_model=List[schemas.URL])
+def read_urls(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    urls = crud.get_urls(db, skip=skip, limit=limit)
+    return urls
+
 @app.get("/{short_key}")
 def redirect_to_url(short_key: str, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     # Try finding by short_key (which might be the custom slug too in our logic)
