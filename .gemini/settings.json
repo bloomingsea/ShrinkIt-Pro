@@ -1,0 +1,44 @@
+{
+  "project_context": {
+    "name": "Professional Web App",
+    "stack": {
+      "backend": "Python 3.11+, FastAPI",
+      "frontend": "React.js (Vite), Tailwind CSS, TypeScript",
+      "database_local": "SQLite",
+      "database_production": "PostgreSQL",
+      "orm": "SQLAlchemy with Alembic migrations",
+      "auth": "JWT with Passlib (bcrypt)"
+    },
+    "coding_standards": {
+      "python": [
+        "Strict type hinting (Pydantic v2)",
+        "Follow PEP 8",
+        "Use FastAPI Dependency Injection for DB sessions",
+        "Async/Await for all path operations"
+      ],
+      "react": [
+        "Functional components with Hooks",
+        "TypeScript interfaces for all props",
+        "Modular folder structure (components/, hooks/, services/)",
+        "Use Lucide-React for icons"
+      ],
+      "general": [
+        "Never hardcode secrets; use .env files",
+        "Write unit tests using Pytest and Vitest",
+        "Document every API endpoint with ReDoc/Swagger standards"
+      ]
+    }
+  },
+  "extensions": {
+    "recommended": [
+      "@gemini-cli-extensions/conductor",
+      "@qodo-ai/open-aware",
+      "postgresql-mcp",
+      "github-mcp"
+    ]
+  },
+  "sandbox": {
+    "provider": "docker",
+    "image": "python:3.11-slim"
+  }
+}
