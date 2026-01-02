@@ -36,5 +36,9 @@
       "postgresql-mcp",
       "github-mcp"
     ]
+  },
+  "sandbox": {
+    "provider": "docker",
+    "image": "python:3.11-slim"
   }
 }
